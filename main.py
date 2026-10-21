@@ -65,28 +65,31 @@ def processar_email_individual(email_cru: str) -> EmailResponse:
     # 1. Remove espaços e converte para minúsculas
     email_limpo = email_cru.strip().lower()
 
-    # 2. FIX DO BUG: Substitui vírgulas por pontos (comum em digitação de e-mails)
+    # 2. Guarda a versão limpa ANTES das substituições para comparar no final
+    email_base_para_comparacao = email_limpo
+
+    # 3. Substitui vírgula por ponto no e-mail inteiro
     if "," in email_limpo:
         email_limpo = email_limpo.replace(",", ".")
 
     email_resultado = email_limpo
 
-    # 3. Aplica correção do domínio se encontrar correspondência no dicionário
+    # 4. Aplica a correção de domínio
     for erro, correcao in CORRECOES_DOMINIO.items():
         if email_limpo.endswith(erro):
             email_resultado = email_limpo.rsplit(erro, 1)[0] + correcao
             break
 
-    # 4. Valida formato sintático sintaticamente
+    # 5. Validação Regex
     valido = bool(REGEX_EMAIL_VALIDO.match(email_resultado))
 
     return EmailResponse(
         email_original=email_cru,
         email_higienizado=email_resultado,
-        foi_alterado=(email_cru.strip().lower() != email_resultado),
+        foi_alterado=(email_base_para_comparacao != email_resultado or email_cru != email_resultado),
         formato_valido=valido
     )
-
+    
 
 # 5. Endpoints da API
 
