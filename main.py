@@ -62,17 +62,22 @@ def processar_email_individual(email_cru: str) -> EmailResponse:
             formato_valido=False
         )
 
-    # Remove espaços nas pontas e converte para minúsculas
+    # 1. Remove espaços e converte para minúsculas
     email_limpo = email_cru.strip().lower()
+
+    # 2. FIX DO BUG: Substitui vírgulas por pontos (comum em digitação de e-mails)
+    if "," in email_limpo:
+        email_limpo = email_limpo.replace(",", ".")
+
     email_resultado = email_limpo
 
-    # Aplica correção do domínio se encontrar correspondência no dicionário
+    # 3. Aplica correção do domínio se encontrar correspondência no dicionário
     for erro, correcao in CORRECOES_DOMINIO.items():
         if email_limpo.endswith(erro):
             email_resultado = email_limpo.rsplit(erro, 1)[0] + correcao
             break
 
-    # Valida formato sintático
+    # 4. Valida formato sintático sintaticamente
     valido = bool(REGEX_EMAIL_VALIDO.match(email_resultado))
 
     return EmailResponse(
